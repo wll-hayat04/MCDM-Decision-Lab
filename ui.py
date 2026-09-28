@@ -9,15 +9,35 @@ import numpy as np
 
 SAATY_VALUES = {
     "1 — Importance égale": 1.0,
-    "2 — Importance faible": 2.0,
+    "2 — Valeur intermédiaire": 2.0,
     "3 — Importance modérée": 3.0,
-    "4 — Entre modérée et forte": 4.0,
+    "4 — Valeur intermédiaire": 4.0,
     "5 — Importance forte": 5.0,
-    "6 — Entre forte et très forte": 6.0,
+    "6 — Valeur intermédiaire": 6.0,
     "7 — Très forte importance": 7.0,
-    "8 — Entre très forte et extrême": 8.0,
+    "8 — Valeur intermédiaire": 8.0,
     "9 — Importance extrême": 9.0,
 }
+
+
+# ============================================================
+# FONCTIONS UTILITAIRES UI
+# ============================================================
+
+def number_columns(columns, precision=4):
+    """
+    Configuration d'affichage numérique pour st.dataframe.
+    Évite l'utilisation de pandas Styler.
+    """
+    fmt = f"%.{precision}f"
+
+    return {
+        col: st.column_config.NumberColumn(
+            col,
+            format=fmt
+        )
+        for col in columns
+    }
 
 
 # ============================================================
@@ -30,9 +50,9 @@ def load_css():
         """
         <style>
 
-        /* ====================================================
+        /* ============================
            GLOBAL
-        ==================================================== */
+        ============================ */
 
         .stApp {
             background:
@@ -55,9 +75,9 @@ def load_css():
         }
 
 
-        /* ====================================================
+        /* ============================
            HEADER
-        ==================================================== */
+        ============================ */
 
         .hero {
             background:
@@ -102,17 +122,13 @@ def load_css():
         }
 
 
-        /* ====================================================
+        /* ============================
            CARDS
-        ==================================================== */
+        ============================ */
 
         .card {
-
             background: white;
-
-            border:
-                1px solid #e2e8f0;
-
+            border: 1px solid #e2e8f0;
             border-radius: 18px;
 
             padding: 18px 20px;
@@ -126,32 +142,24 @@ def load_css():
         }
 
         .card-title {
-
             font-weight: 800;
-
             color: #0f172a;
-
             font-size: 1.05rem;
-
             margin-bottom: 4px;
         }
 
         .card-text {
-
             color: #64748b;
-
             font-size: 0.92rem;
-
             line-height: 1.55;
         }
 
 
-        /* ====================================================
-           NUMERO ETAPES
-        ==================================================== */
+        /* ============================
+           NUMEROS ETAPES
+        ============================ */
 
         .step {
-
             width: 34px;
             height: 34px;
 
@@ -163,7 +171,6 @@ def load_css():
             justify-content: center;
 
             background: #dbeafe;
-
             color: #1d4ed8;
 
             font-weight: 800;
@@ -172,12 +179,11 @@ def load_css():
         }
 
 
-        /* ====================================================
-           RESULTAT GAGNANT
-        ==================================================== */
+        /* ============================
+           WINNER
+        ============================ */
 
         .winner {
-
             background:
                 linear-gradient(
                     135deg,
@@ -185,8 +191,7 @@ def load_css():
                     #ecfccb
                 );
 
-            border:
-                1px solid #bbf7d0;
+            border: 1px solid #bbf7d0;
 
             color: #14532d;
 
@@ -200,17 +205,15 @@ def load_css():
                 0 8px 26px
                 rgba(34, 197, 94, 0.10);
 
-            margin:
-                10px 0 18px;
+            margin: 10px 0 18px;
         }
 
 
-        /* ====================================================
+        /* ============================
            FORMULES
-        ==================================================== */
+        ============================ */
 
         .formula-box {
-
             background: #f8fafc;
 
             border-left:
@@ -220,19 +223,17 @@ def load_css():
 
             padding: 12px 16px;
 
-            margin:
-                8px 0 14px;
+            margin: 8px 0 14px;
 
             color: #334155;
         }
 
 
-        /* ====================================================
+        /* ============================
            SIDEBAR
-        ==================================================== */
+        ============================ */
 
         section[data-testid="stSidebar"] {
-
             background:
                 linear-gradient(
                     180deg,
@@ -241,35 +242,32 @@ def load_css():
                 );
         }
 
-        section[data-testid="stSidebar"]
-        label {
-
+        section[data-testid="stSidebar"] label,
+        section[data-testid="stSidebar"] h1,
+        section[data-testid="stSidebar"] h2,
+        section[data-testid="stSidebar"] h3,
+        section[data-testid="stSidebar"] p {
             color: white !important;
         }
 
 
-        /* ====================================================
-           BOUTONS
-        ==================================================== */
+        /* ============================
+           BUTTONS
+        ============================ */
 
         div.stButton > button {
-
             border-radius: 14px;
-
             font-weight: 800;
-
             min-height: 46px;
         }
 
 
-        /* ====================================================
-           DATAFRAME
-        ==================================================== */
+        /* ============================
+           DATAFRAMES
+        ============================ */
 
         div[data-testid="stDataFrame"] {
-
             border-radius: 14px;
-
             overflow: hidden;
         }
 
@@ -300,8 +298,9 @@ def show_header():
             <p>
                 Sélection multicritère du meilleur modèle de
                 Machine Learning pour la détection de fraude bancaire.
-                L'application détaille les différentes étapes :
-                pondération, normalisation, agrégation et classement.
+                L'application détaille la pondération,
+                la normalisation, l'agrégation
+                et le classement des alternatives.
             </p>
 
         </div>
@@ -311,7 +310,7 @@ def show_header():
 
 
 # ============================================================
-# CARTE DE SECTION
+# TITRES DES SECTIONS
 # ============================================================
 
 def section(step, title, text):
@@ -351,8 +350,7 @@ def show_sidebar():
         st.markdown("## MCDM Decision Lab")
 
         st.caption(
-            "Configuration des méthodes utilisées "
-            "pour l'analyse multicritère."
+            "Configuration de l'analyse multicritère."
         )
 
         st.markdown("---")
@@ -383,8 +381,8 @@ def show_sidebar():
             ]
         )
 
-        # Paramètre WASPAS
         lam = 0.5
+        vikor_v = 0.5
 
         if ranking == "WASPAS":
 
@@ -398,15 +396,12 @@ def show_sidebar():
                 step=0.05
             )
 
-        # Paramètre VIKOR
-        vikor_v = 0.5
-
         if ranking == "VIKOR":
 
             st.markdown("---")
 
             vikor_v = st.slider(
-                "v — stratégie d'utilité de groupe",
+                "v — utilité de groupe",
                 min_value=0.0,
                 max_value=1.0,
                 value=0.5,
@@ -416,11 +411,11 @@ def show_sidebar():
         st.markdown("---")
 
         st.caption(
-            "Benefit (+) : critère à maximiser"
+            "Benefit (+) : à maximiser"
         )
 
         st.caption(
-            "Cost (−) : critère à minimiser"
+            "Cost (−) : à minimiser"
         )
 
     return (
@@ -432,7 +427,7 @@ def show_sidebar():
 
 
 # ============================================================
-# TELECHARGEMENT MATRICE
+# TELECHARGER MATRICE
 # ============================================================
 
 def download_matrix(
@@ -451,7 +446,7 @@ def download_matrix(
         data=csv,
         file_name="decision_matrix.csv",
         mime="text/csv",
-        use_container_width=True,
+        width="stretch",
         key=key
     )
 
@@ -466,16 +461,11 @@ def show_decision_matrix(default_df):
         "1",
         "Matrice de décision",
         """
-        Sélectionnez une source de données.
-        Vous pouvez utiliser l'exemple fourni,
-        modifier directement la matrice
-        ou importer votre propre fichier CSV.
+        Utilisez les données d'exemple,
+        construisez votre matrice manuellement
+        ou importez votre propre fichier CSV.
         """
     )
-
-    # --------------------------------------------------------
-    # SOURCE
-    # --------------------------------------------------------
 
     source = st.radio(
         "Source des données",
@@ -491,25 +481,21 @@ def show_decision_matrix(default_df):
 
 
     # ========================================================
-    # 1. DONNEES EXEMPLE
+    # DONNEES EXEMPLE
     # ========================================================
 
     if source == "Données d'exemple":
 
         st.info(
-            "La matrice ci-dessous contient les données "
-            "initiales du scénario de détection de fraude. "
-            "Toutes les valeurs peuvent être modifiées."
+            "Vous pouvez modifier les valeurs, "
+            "ajouter des alternatives ou supprimer des lignes."
         )
 
         edited_df = st.data_editor(
             default_df.copy(),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
-
-            # permet ajout/suppression de lignes
             num_rows="dynamic",
-
             key="example_editor"
         )
 
@@ -522,33 +508,31 @@ def show_decision_matrix(default_df):
 
 
     # ========================================================
-    # 2. SAISIE MANUELLE
+    # SAISIE MANUELLE
     # ========================================================
 
     elif source == "Saisie manuelle":
 
         st.info(
-            "Construisez votre propre matrice à partir "
-            "de la structure actuelle. Vous pouvez ajouter "
-            "ou supprimer des alternatives."
+            "Remplissez directement votre matrice "
+            "de décision."
         )
 
-        # Initialisation une seule fois
         if "manual_matrix" not in st.session_state:
 
-            # même structure de colonnes
-            # mais matrice simple à remplir
             manual_df = default_df.copy()
+
+            manual_df["Model"] = [
+                f"Model {i + 1}"
+                for i in range(
+                    len(manual_df)
+                )
+            ]
 
             numeric_cols = [
                 col
                 for col in manual_df.columns
                 if col != "Model"
-            ]
-
-            manual_df["Model"] = [
-                f"Model {i+1}"
-                for i in range(len(manual_df))
             ]
 
             for col in numeric_cols:
@@ -557,26 +541,24 @@ def show_decision_matrix(default_df):
             st.session_state.manual_matrix = manual_df
 
 
-        # ----------------------------------------------------
-        # Reset
-        # ----------------------------------------------------
-
         if st.button(
-            "Réinitialiser la saisie",
-            use_container_width=False
+            "Réinitialiser la matrice",
+            width="content"
         ):
 
             manual_df = default_df.copy()
 
+            manual_df["Model"] = [
+                f"Model {i + 1}"
+                for i in range(
+                    len(manual_df)
+                )
+            ]
+
             numeric_cols = [
                 col
                 for col in manual_df.columns
                 if col != "Model"
-            ]
-
-            manual_df["Model"] = [
-                f"Model {i+1}"
-                for i in range(len(manual_df))
             ]
 
             for col in numeric_cols:
@@ -584,10 +566,15 @@ def show_decision_matrix(default_df):
 
             st.session_state.manual_matrix = manual_df
 
+            if "manual_editor" in st.session_state:
+                del st.session_state["manual_editor"]
+
+            st.rerun()
+
 
         edited_df = st.data_editor(
             st.session_state.manual_matrix,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             num_rows="dynamic",
             key="manual_editor"
@@ -602,14 +589,14 @@ def show_decision_matrix(default_df):
 
 
     # ========================================================
-    # 3. IMPORT CSV
+    # IMPORT CSV
     # ========================================================
 
     else:
 
         st.markdown(
             """
-            Le fichier doit contenir :
+            Le fichier CSV doit contenir :
 
             - une colonne **Model**
             - une ligne par alternative
@@ -618,27 +605,21 @@ def show_decision_matrix(default_df):
         )
 
         uploaded_file = st.file_uploader(
-            "Importer votre matrice de décision",
+            "Importer la matrice",
             type=["csv"]
         )
 
         if uploaded_file is None:
 
             st.warning(
-                "Importez un fichier CSV pour poursuivre l'analyse."
+                "Importez un fichier CSV pour continuer."
             )
 
             st.stop()
 
 
-        # ----------------------------------------------------
-        # Lecture CSV
-        # ----------------------------------------------------
-
         try:
 
-            # sep=None permet de reconnaître ,
-            # ou ; dans beaucoup de fichiers CSV
             df = pd.read_csv(
                 uploaded_file,
                 sep=None,
@@ -648,40 +629,31 @@ def show_decision_matrix(default_df):
         except Exception as error:
 
             st.error(
-                f"Impossible de lire le fichier CSV : {error}"
+                f"Erreur de lecture du fichier : {error}"
             )
 
             st.stop()
 
 
-        # ----------------------------------------------------
-        # Contrôle colonne Model
-        # ----------------------------------------------------
-
         if "Model" not in df.columns:
 
             st.error(
-                "Le fichier doit obligatoirement contenir "
-                "une colonne nommée 'Model'."
+                "Le fichier doit contenir une colonne "
+                "nommée exactement 'Model'."
             )
 
             st.stop()
 
 
         st.success(
-            f"Fichier chargé avec succès : "
             f"{len(df)} alternatives et "
-            f"{len(df.columns)-1} critères."
+            f"{len(df.columns) - 1} critères chargés."
         )
 
 
-        # ----------------------------------------------------
-        # Edition après import
-        # ----------------------------------------------------
-
         edited_df = st.data_editor(
             df,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             num_rows="dynamic",
             key="uploaded_editor"
@@ -708,8 +680,8 @@ def show_criteria_controls(
         "2",
         "Nature des critères",
         """
-        Chaque critère doit être défini comme
-        Benefit (+) lorsqu'il doit être maximisé,
+        Définissez chaque critère comme
+        Benefit (+) lorsqu'il doit être maximisé
         ou Cost (−) lorsqu'il doit être minimisé.
         """
     )
@@ -758,9 +730,9 @@ def show_manual_weights(criteria):
         "3",
         "Pondération manuelle",
         """
-        Attribuez une importance à chaque critère.
+        Saisissez l'importance de chaque critère.
         Les valeurs seront automatiquement normalisées
-        afin que la somme des poids soit égale à 1.
+        afin que leur somme soit égale à 1.
         """
     )
 
@@ -795,10 +767,8 @@ def show_ahp_input(criteria):
         "3",
         "Pondération AHP",
         """
-        Comparez les critères deux à deux à l'aide
-        de l'échelle de Saaty de 1 à 9.
-        L'application construira automatiquement
-        la matrice réciproque.
+        Comparez les critères deux à deux
+        avec l'échelle de Saaty de 1 à 9.
         """
     )
 
@@ -810,38 +780,30 @@ def show_ahp_input(criteria):
     )
 
     st.markdown(
-        "#### Comparaisons par paires"
+        "### Comparaisons par paires"
     )
 
     st.caption(
-        "Pour chaque paire, choisissez le critère "
-        "le plus important puis l'intensité de préférence."
+        "Choisissez le critère dominant "
+        "puis son niveau d'importance."
     )
 
 
-    # --------------------------------------------------------
-    # Comparaisons
-    # --------------------------------------------------------
-
     for i in range(n):
 
-        for j in range(i + 1, n):
-
-            st.markdown("---")
+        for j in range(
+            i + 1,
+            n
+        ):
 
             c1, c2 = st.columns(
-                [1.4, 1]
+                [1.3, 1]
             )
-
-
-            # ------------------------------------------------
-            # Quel critère est dominant ?
-            # ------------------------------------------------
 
             with c1:
 
                 dominant = st.selectbox(
-                    f"{criteria[i]} vs {criteria[j]}",
+                    f"{criteria[i]}  vs  {criteria[j]}",
                     [
                         "Importance égale",
                         criteria[i],
@@ -850,31 +812,26 @@ def show_ahp_input(criteria):
                     key=f"dominant_{i}_{j}"
                 )
 
-
-            # ------------------------------------------------
-            # Intensité
-            # ------------------------------------------------
-
             with c2:
 
                 if dominant == "Importance égale":
 
                     intensity = 1.0
 
-                    st.number_input(
+                    st.text_input(
                         "Intensité",
-                        min_value=1.0,
-                        max_value=1.0,
-                        value=1.0,
+                        value="1 — Importance égale",
                         disabled=True,
-                        key=f"intensity_equal_{i}_{j}"
+                        key=f"equal_{i}_{j}"
                     )
 
                 else:
 
                     label = st.selectbox(
-                        "Intensité de préférence",
-                        list(SAATY_VALUES.keys()),
+                        "Échelle de Saaty",
+                        list(
+                            SAATY_VALUES.keys()
+                        ),
                         index=2,
                         key=f"intensity_{i}_{j}"
                     )
@@ -884,10 +841,6 @@ def show_ahp_input(criteria):
                     )
 
 
-            # ------------------------------------------------
-            # Construction matrice
-            # ------------------------------------------------
-
             if dominant == "Importance égale":
 
                 A[i, j] = 1.0
@@ -896,7 +849,6 @@ def show_ahp_input(criteria):
             elif dominant == criteria[i]:
 
                 A[i, j] = intensity
-
                 A[j, i] = (
                     1.0 / intensity
                 )
@@ -910,21 +862,34 @@ def show_ahp_input(criteria):
                 A[j, i] = intensity
 
 
-    # --------------------------------------------------------
-    # Affichage matrice
-    # --------------------------------------------------------
-
-    st.markdown("#### Matrice de comparaison AHP")
+    st.markdown(
+        "### Matrice de comparaison AHP"
+    )
 
     ahp_df = pd.DataFrame(
         A,
-        index=criteria,
-        columns=criteria
+        columns=criteria,
+        index=criteria
+    )
+
+    ahp_display = (
+        ahp_df
+        .reset_index()
+        .rename(
+            columns={
+                "index": "Critère"
+            }
+        )
     )
 
     st.dataframe(
-        ahp_df.style.format("{:.3f}"),
-        use_container_width=True
+        ahp_display,
+        width="stretch",
+        hide_index=True,
+        column_config=number_columns(
+            criteria,
+            3
+        )
     )
 
     return A
@@ -940,16 +905,12 @@ def show_bwm_input(criteria):
         "3",
         "Pondération BWM",
         """
-        Sélectionnez le critère le plus important (Best)
-        et le moins important (Worst), puis réalisez
-        les comparaisons Best-to-Others et Others-to-Worst.
+        Choisissez le critère le plus important (Best)
+        et le moins important (Worst),
+        puis renseignez les comparaisons.
         """
     )
 
-
-    # --------------------------------------------------------
-    # BEST
-    # --------------------------------------------------------
 
     best = st.selectbox(
         "Critère le plus important — Best",
@@ -958,15 +919,12 @@ def show_bwm_input(criteria):
     )
 
 
-    # --------------------------------------------------------
-    # WORST
-    # --------------------------------------------------------
-
     worst_choices = [
         c
         for c in criteria
         if c != best
     ]
+
 
     worst = st.selectbox(
         "Critère le moins important — Worst",
@@ -975,23 +933,28 @@ def show_bwm_input(criteria):
     )
 
 
-    best_index = criteria.index(best)
+    best_index = criteria.index(
+        best
+    )
 
-    worst_index = criteria.index(worst)
+    worst_index = criteria.index(
+        worst
+    )
 
 
     # ========================================================
-    # BEST TO OTHERS
+    # BEST -> OTHERS
     # ========================================================
 
     st.markdown(
-        "#### Best → Others"
+        "### Best → Others"
     )
 
     st.caption(
-        f"Combien de fois **{best}** est-il "
-        "plus important que chaque critère ?"
+        f"Combien de fois {best} est-il "
+        "plus important que les autres critères ?"
     )
+
 
     best_to_others = []
 
@@ -1024,29 +987,32 @@ def show_bwm_input(criteria):
                     key=f"bo_{i}"
                 )
 
-            best_to_others.append(value)
+            best_to_others.append(
+                value
+            )
 
 
     # ========================================================
-    # OTHERS TO WORST
+    # OTHERS -> WORST
     # ========================================================
 
     st.markdown(
-        "#### Others → Worst"
+        "### Others → Worst"
     )
 
     st.caption(
-        f"Combien de fois chaque critère est-il "
-        f"plus important que **{worst}** ?"
+        f"Combien de fois chaque critère "
+        f"est-il plus important que {worst} ?"
     )
+
 
     others_to_worst = []
 
-    cols2 = st.columns(3)
+    cols = st.columns(3)
 
     for i, criterion in enumerate(criteria):
 
-        with cols2[i % 3]:
+        with cols[i % 3]:
 
             if i == worst_index:
 
@@ -1071,7 +1037,9 @@ def show_bwm_input(criteria):
                     key=f"ow_{i}"
                 )
 
-            others_to_worst.append(value)
+            others_to_worst.append(
+                value
+            )
 
 
     return (
@@ -1083,7 +1051,7 @@ def show_bwm_input(criteria):
 
 
 # ============================================================
-# AFFICHAGE POIDS
+# AFFICHAGE DES POIDS
 # ============================================================
 
 def show_weights_result(
@@ -1102,10 +1070,6 @@ def show_weights_result(
     )
 
 
-    # --------------------------------------------------------
-    # Tableau poids
-    # --------------------------------------------------------
-
     weights_df = pd.DataFrame(
         {
             "Critère": criteria,
@@ -1113,20 +1077,20 @@ def show_weights_result(
         }
     )
 
+
     st.dataframe(
-        weights_df.style.format(
-            {
-                "Poids": "{:.4f}"
-            }
-        ),
-        use_container_width=True,
-        hide_index=True
+        weights_df,
+        width="stretch",
+        hide_index=True,
+        column_config={
+            "Poids":
+                st.column_config.NumberColumn(
+                    "Poids",
+                    format="%.4f"
+                )
+        }
     )
 
-
-    # --------------------------------------------------------
-    # Graphique
-    # --------------------------------------------------------
 
     chart_df = (
         weights_df
@@ -1149,19 +1113,25 @@ def show_weights_result(
 
     if method == "AHP":
 
-        st.markdown("#### Test de consistance")
+        st.markdown(
+            "### Test de consistance"
+        )
+
 
         c1, c2, c3 = st.columns(3)
+
 
         c1.metric(
             "λmax",
             f"{details['lambda_max']:.4f}"
         )
 
+
         c2.metric(
             "CI",
             f"{details['CI']:.4f}"
         )
+
 
         c3.metric(
             "CR",
@@ -1173,14 +1143,14 @@ def show_weights_result(
 
             st.success(
                 "CR < 0,10 : "
-                "la matrice de comparaison est cohérente."
+                "la matrice est cohérente."
             )
 
         else:
 
             st.warning(
                 "CR ≥ 0,10 : "
-                "les comparaisons devraient être révisées."
+                "les comparaisons doivent être révisées."
             )
 
 
@@ -1189,16 +1159,26 @@ def show_weights_result(
         ):
 
             normalized_df = pd.DataFrame(
-                details["normalized_pairwise"],
-                index=criteria,
+                details[
+                    "normalized_pairwise"
+                ],
                 columns=criteria
             )
 
+            normalized_df.insert(
+                0,
+                "Critère",
+                criteria
+            )
+
             st.dataframe(
-                normalized_df.style.format(
-                    "{:.4f}"
-                ),
-                use_container_width=True
+                normalized_df,
+                width="stretch",
+                hide_index=True,
+                column_config=number_columns(
+                    criteria,
+                    4
+                )
             )
 
 
@@ -1243,12 +1223,18 @@ def show_weights_result(
                 }
             )
 
+
             st.dataframe(
-                entropy_df.style.format(
-                    precision=4
-                ),
-                use_container_width=True,
-                hide_index=True
+                entropy_df,
+                width="stretch",
+                hide_index=True,
+                column_config=number_columns(
+                    [
+                        "Entropie E_j",
+                        "Diversification 1-E_j"
+                    ],
+                    4
+                )
             )
 
 
@@ -1258,7 +1244,7 @@ def show_weights_result(
         ):
 
             with st.expander(
-                "Voir la matrice utilisée par Entropy"
+                "Voir la matrice Entropy"
             ):
 
                 matrix_df = pd.DataFrame(
@@ -1269,11 +1255,13 @@ def show_weights_result(
                 )
 
                 st.dataframe(
-                    matrix_df.style.format(
-                        precision=4
-                    ),
-                    use_container_width=True,
-                    hide_index=True
+                    matrix_df,
+                    width="stretch",
+                    hide_index=True,
+                    column_config=number_columns(
+                        criteria,
+                        4
+                    )
                 )
 
 
@@ -1299,12 +1287,15 @@ def show_weights_result(
                 }
             )
 
+
             st.dataframe(
-                critic_df.style.format(
-                    precision=4
-                ),
-                use_container_width=True,
-                hide_index=True
+                critic_df,
+                width="stretch",
+                hide_index=True,
+                column_config=number_columns(
+                    ["σ_j", "C_j"],
+                    4
+                )
             )
 
 
@@ -1314,15 +1305,23 @@ def show_weights_result(
 
             corr_df = pd.DataFrame(
                 details["correlation"],
-                index=criteria,
                 columns=criteria
             )
 
+            corr_df.insert(
+                0,
+                "Critère",
+                criteria
+            )
+
             st.dataframe(
-                corr_df.style.format(
-                    "{:.3f}"
-                ),
-                use_container_width=True
+                corr_df,
+                width="stretch",
+                hide_index=True,
+                column_config=number_columns(
+                    criteria,
+                    3
+                )
             )
 
 
@@ -1343,16 +1342,18 @@ def show_weights_result(
                 )
 
                 st.dataframe(
-                    matrix_df.style.format(
-                        precision=4
-                    ),
-                    use_container_width=True,
-                    hide_index=True
+                    matrix_df,
+                    width="stretch",
+                    hide_index=True,
+                    column_config=number_columns(
+                        criteria,
+                        4
+                    )
                 )
 
 
 # ============================================================
-# DETAILS CLASSEMENT / NORMALISATION
+# NORMALISATION + DETAILS CLASSEMENT
 # ============================================================
 
 def show_ranking_details(
@@ -1365,11 +1366,12 @@ def show_ranking_details(
         "5",
         "Normalisation et calcul",
         """
-        Cette section présente les matrices
-        et les calculs intermédiaires propres
-        à la méthode de classement choisie.
+        Cette partie présente les étapes
+        intermédiaires propres à la méthode
+        de classement sélectionnée.
         """
     )
+
 
     method = details["method"]
 
@@ -1387,6 +1389,7 @@ def show_ranking_details(
             "### Matrice normalisée"
         )
 
+
         normalized_df = pd.DataFrame(
             details[
                 "normalized_matrix"
@@ -1394,23 +1397,27 @@ def show_ranking_details(
             columns=criteria
         )
 
+
         normalized_df.insert(
             0,
             "Alternative",
             list(alternatives)
         )
 
+
         st.dataframe(
-            normalized_df.style.format(
-                precision=4
-            ),
-            use_container_width=True,
-            hide_index=True
+            normalized_df,
+            width="stretch",
+            hide_index=True,
+            column_config=number_columns(
+                criteria,
+                4
+            )
         )
 
 
     # ========================================================
-    # MATRICE PONDEREE
+    # MATRICE NORMALISEE PONDEREE
     # ========================================================
 
     if (
@@ -1422,6 +1429,7 @@ def show_ranking_details(
             "### Matrice normalisée pondérée"
         )
 
+
         weighted_df = pd.DataFrame(
             details[
                 "weighted_matrix"
@@ -1429,18 +1437,22 @@ def show_ranking_details(
             columns=criteria
         )
 
+
         weighted_df.insert(
             0,
             "Alternative",
             list(alternatives)
         )
 
+
         st.dataframe(
-            weighted_df.style.format(
-                precision=4
-            ),
-            use_container_width=True,
-            hide_index=True
+            weighted_df,
+            width="stretch",
+            hide_index=True,
+            column_config=number_columns(
+                criteria,
+                4
+            )
         )
 
 
@@ -1454,13 +1466,15 @@ def show_ranking_details(
             """
             <div class="formula-box">
 
-            <b>Weighted Sum Method</b><br><br>
+            <b>Weighted Sum Method — WSM</b>
+
+            <br><br>
 
             Qᵢ = Σⱼ wⱼ rᵢⱼ
 
             <br><br>
 
-            L'alternative ayant le score Qᵢ
+            L'alternative avec le score Qᵢ
             le plus élevé est la meilleure.
 
             </div>
@@ -1479,7 +1493,9 @@ def show_ranking_details(
             """
             <div class="formula-box">
 
-            <b>Weighted Product Method</b><br><br>
+            <b>Weighted Product Method — WPM</b>
+
+            <br><br>
 
             Qᵢ = ∏ⱼ (rᵢⱼ)<sup>wⱼ</sup>
 
@@ -1503,11 +1519,14 @@ def show_ranking_details(
             f"""
             <div class="formula-box">
 
-            <b>WASPAS</b><br><br>
+            <b>WASPAS</b>
+
+            <br><br>
 
             Qᵢ =
-            λ Qᵢ⁽¹⁾ +
-            (1 − λ) Qᵢ⁽²⁾
+            λ Qᵢ⁽¹⁾
+            +
+            (1−λ) Qᵢ⁽²⁾
 
             <br><br>
 
@@ -1534,11 +1553,16 @@ def show_ranking_details(
 
 
         st.dataframe(
-            waspas_df.style.format(
-                precision=4
-            ),
-            use_container_width=True,
-            hide_index=True
+            waspas_df,
+            width="stretch",
+            hide_index=True,
+            column_config=number_columns(
+                [
+                    "Q1 — WSM",
+                    "Q2 — WPM"
+                ],
+                4
+            )
         )
 
 
@@ -1552,7 +1576,9 @@ def show_ranking_details(
             """
             <div class="formula-box">
 
-            <b>TOPSIS</b><br><br>
+            <b>TOPSIS</b>
+
+            <br><br>
 
             RCᵢ =
             Sᵢ⁻ /
@@ -1584,15 +1610,16 @@ def show_ranking_details(
 
 
         st.dataframe(
-            topsis_df.style.format(
-                precision=4
-            ),
-            use_container_width=True,
-            hide_index=True
+            topsis_df,
+            width="stretch",
+            hide_index=True,
+            column_config=number_columns(
+                ["S+", "S-"],
+                4
+            )
         )
 
 
-        # Solutions idéales
         with st.expander(
             "Voir les solutions idéales TOPSIS"
         ):
@@ -1614,12 +1641,18 @@ def show_ranking_details(
                 }
             )
 
+
             st.dataframe(
-                ideal_df.style.format(
-                    precision=4
-                ),
-                use_container_width=True,
-                hide_index=True
+                ideal_df,
+                width="stretch",
+                hide_index=True,
+                column_config=number_columns(
+                    [
+                        "Idéal positif I+",
+                        "Idéal négatif I-"
+                    ],
+                    4
+                )
             )
 
 
@@ -1633,11 +1666,9 @@ def show_ranking_details(
             """
             <div class="formula-box">
 
-            <b>VIKOR</b><br><br>
+            <b>VIKOR</b>
 
-            La méthode calcule :
-
-            <br>
+            <br><br>
 
             Sᵢ : utilité globale
 
@@ -1678,15 +1709,18 @@ def show_ranking_details(
 
 
         st.dataframe(
-            vikor_df.style.format(
-                precision=4
-            ),
-            use_container_width=True,
-            hide_index=True
+            vikor_df,
+            width="stretch",
+            hide_index=True,
+            column_config=number_columns(
+                ["S", "R", "Q"],
+                4
+            )
         )
 
 
         c1, c2 = st.columns(2)
+
 
         with c1:
 
@@ -1722,7 +1756,6 @@ def show_ranking_details(
                 )
 
 
-        # Best / Worst
         with st.expander(
             "Voir les meilleures et mauvaises valeurs"
         ):
@@ -1740,17 +1773,23 @@ def show_ranking_details(
                 }
             )
 
+
             st.dataframe(
-                ideal_df.style.format(
-                    precision=4
-                ),
-                use_container_width=True,
-                hide_index=True
+                ideal_df,
+                width="stretch",
+                hide_index=True,
+                column_config=number_columns(
+                    [
+                        "Meilleure valeur",
+                        "Mauvaise valeur"
+                    ],
+                    4
+                )
             )
 
 
 # ============================================================
-# RESULTATS
+# RESULTATS FINAUX
 # ============================================================
 
 def show_results(
@@ -1762,18 +1801,14 @@ def show_results(
         "6",
         "Classement final",
         """
-        Les alternatives sont classées selon
-        le score obtenu avec la méthode MCDM sélectionnée.
+        Les alternatives sont classées
+        selon la méthode MCDM sélectionnée.
         """
     )
 
 
     best = result_df.iloc[0]
 
-
-    # --------------------------------------------------------
-    # WINNER
-    # --------------------------------------------------------
 
     st.markdown(
         f"""
@@ -1797,10 +1832,6 @@ def show_results(
     )
 
 
-    # --------------------------------------------------------
-    # TABLE + CHART
-    # --------------------------------------------------------
-
     c1, c2 = st.columns(
         [1.15, 1],
         gap="large"
@@ -1813,15 +1844,18 @@ def show_results(
             "### Classement"
         )
 
+
         st.dataframe(
-            result_df.style.format(
-                {
-                    score_col:
-                        "{:.4f}"
-                }
-            ),
-            use_container_width=True,
-            hide_index=True
+            result_df,
+            width="stretch",
+            hide_index=True,
+            column_config={
+                score_col:
+                    st.column_config.NumberColumn(
+                        score_col,
+                        format="%.4f"
+                    )
+            }
         )
 
 
@@ -1831,6 +1865,7 @@ def show_results(
             "### Scores"
         )
 
+
         chart_df = (
             result_df
             .set_index(
@@ -1839,6 +1874,7 @@ def show_results(
                 [score_col]
             ]
         )
+
 
         st.bar_chart(
             chart_df
