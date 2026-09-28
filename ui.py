@@ -1888,17 +1888,19 @@ def show_results(result_df, score_col):
 
         st.markdown("### Scores")
 
-        # IMPORTANT :
-        # on garde exactement l'ordre du classement
-        chart_df = (
-            result_df[
-                ["Alternative", score_col]
-            ]
-            .copy()
-            .set_index("Alternative")
+        chart_df = result_df[["Alternative", score_col]].copy()
+
+        chart_df["Alternative"] = pd.Categorical(chart_df["Alternative"],categories=result_df["Alternative"].tolist(),ordered=True)
+
+        chart_df = chart_df.sort_values("Alternative")
+
+        import altair as alt
+
+        chart = (alt.Chart(chart_df).mark_bar().encode(
+                x=alt.X("Alternative:N",sort=result_df["Alternative"].tolist(),title=None),
+                y=alt.Y(f"{score_col}:Q",title=score_col),
+                tooltip=["Alternative:N",alt.Tooltip(f"{score_col}:Q",format=".4f")]
+            )
         )
 
-        st.bar_chart(
-            chart_df,
-            width="stretch"
-        )
+        st.altair_chart(chart,width="stretch")
