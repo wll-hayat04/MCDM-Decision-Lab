@@ -1337,12 +1337,7 @@ def show_weights_result(
 # NORMALISATION + DETAILS CLASSEMENT
 # ============================================================
 
-def show_ranking_details(
-    criteria,
-    alternatives,
-    details
-):
-
+def show_ranking_details(criteria,alternatives,details):
     section(
         "5",
         "Normalisation et calcul",
@@ -1356,35 +1351,42 @@ def show_ranking_details(
 
     method = details["method"]
 
+    # ========================================================
+    # SOLUTIONS IDEALES
+    # ========================================================
 
+    if ("best" in details and "worst" in details):
+        st.markdown( "### Solutions idéales")
+        st.caption(
+            "Pour chaque critère, xⱼ⁺ représente la meilleure "
+            "valeur et xⱼ⁻ la moins bonne valeur."
+        )
+
+        ideal_df = pd.DataFrame(
+            {
+                "Critère": criteria,
+                "xⱼ⁺ — Meilleure valeur": details["best"],
+                "xⱼ⁻ — Mauvaise valeur": details["worst"]
+            }
+        )
+
+        st.dataframe(
+            ideal_df,
+            width="stretch",
+            hide_index=True,
+            column_config=number_columns(
+                ["xⱼ⁺ — Meilleure valeur","xⱼ⁻ — Mauvaise valeur"],4
+            )
+        )
     # ========================================================
     # MATRICE NORMALISEE
     # ========================================================
 
-    if (
-        "normalized_matrix"
-        in details
-    ):
+    if ( "normalized_matrix" in details):
+        st.markdown("### Matrice normalisée")
 
-        st.markdown(
-            "### Matrice normalisée"
-        )
-
-
-        normalized_df = pd.DataFrame(
-            details[
-                "normalized_matrix"
-            ],
-            columns=criteria
-        )
-
-
-        normalized_df.insert(
-            0,
-            "Alternative",
-            list(alternatives)
-        )
-
+        normalized_df = pd.DataFrame(details["normalized_matrix"],columns=criteria)
+        normalized_df.insert(0,"Alternative",list(alternatives))
 
         st.dataframe(
             normalized_df,
