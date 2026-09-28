@@ -54,7 +54,7 @@ def normalize_topsis(matrix):
 
 def normalize_critic(matrix, benefit_flags):
     """
-    Normalisation min-max CRITIC du cours.
+    Normalisation min-max CRITIC
     benefit: (x-min)/(max-min)
     cost:    (max-x)/(max-min)
     """
