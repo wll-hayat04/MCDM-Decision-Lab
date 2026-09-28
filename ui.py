@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-
+import textwrap
 
 # ============================================================
 # CONSTANTES
@@ -19,7 +19,11 @@ SAATY_VALUES = {
     "9 — Importance extrême": 9.0,
 }
 
-
+def html(content):
+    st.markdown(
+        textwrap.dedent(content).strip(),
+        unsafe_allow_html=True
+    )
 # ============================================================
 # FONCTIONS UTILITAIRES UI
 # ============================================================
@@ -280,33 +284,25 @@ def load_css():
 # ============================================================
 # HEADER
 # ============================================================
-
 def show_header():
 
-    st.markdown(
-        """
-        <div class="hero">
-
-            <div class="eyebrow">
-                Decision Intelligence • MCDM
-            </div>
-
-            <h1>
-                MCDM Decision Lab
-            </h1>
-
-            <p>
-                Sélection multicritère du meilleur modèle de
-                Machine Learning pour la détection de fraude bancaire.
-                L'application détaille la pondération,
-                la normalisation, l'agrégation
-                et le classement des alternatives.
-            </p>
-
+    html("""
+    <div class="hero">
+        <div class="eyebrow">
+            Decision Intelligence • MCDM
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+
+        <h1>MCDM Decision Lab</h1>
+
+        <p>
+            Sélection multicritère du meilleur modèle de
+            Machine Learning pour la détection de fraude bancaire.
+            L'application détaille la pondération,
+            la normalisation, l'agrégation
+            et le classement des alternatives.
+        </p>
+    </div>
+    """)
 
 
 # ============================================================
@@ -315,30 +311,18 @@ def show_header():
 
 def section(step, title, text):
 
-    st.markdown(
-        f"""
-        <div class="card">
-
-            <div class="card-title">
-
-                <span class="step">
-                    {step}
-                </span>
-
-                {title}
-
-            </div>
-
-            <div class="card-text">
-                {text}
-            </div>
-
+    html(f"""
+    <div class="card">
+        <div class="card-title">
+            <span class="step">{step}</span>
+            {title}
         </div>
-        """,
-        unsafe_allow_html=True
-    )
 
-
+        <div class="card-text">
+            {text}
+        </div>
+    </div>
+    """)
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -1792,10 +1776,7 @@ def show_ranking_details(
 # RESULTATS FINAUX
 # ============================================================
 
-def show_results(
-    result_df,
-    score_col
-):
+def show_results(result_df,score_col):
 
     section(
         "6",
@@ -1806,44 +1787,30 @@ def show_results(
         """
     )
 
-
     best = result_df.iloc[0]
 
+    html(f"""
+    <div class="winner">
+        Meilleure alternative :
+        <b>{best["Alternative"]}</b>
 
-    st.markdown(
-        f"""
-        <div class="winner">
+        &nbsp;&nbsp; | &nbsp;&nbsp;
 
-            Meilleure alternative :
-            <b>
-                {best["Alternative"]}
-            </b>
-
-            &nbsp;&nbsp; | &nbsp;&nbsp;
-
-            {score_col} =
-            <b>
-                {best[score_col]:.4f}
-            </b>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
+        {score_col} =
+        <b>{best[score_col]:.4f}</b>
+    </div>
+    """)
 
     c1, c2 = st.columns(
         [1.15, 1],
         gap="large"
     )
 
-
     with c1:
 
         st.markdown(
             "### Classement"
         )
-
 
         st.dataframe(
             result_df,
@@ -1858,13 +1825,11 @@ def show_results(
             }
         )
 
-
     with c2:
 
         st.markdown(
             "### Scores"
         )
-
 
         chart_df = (
             result_df
@@ -1874,7 +1839,6 @@ def show_results(
                 [score_col]
             ]
         )
-
 
         st.bar_chart(
             chart_df
