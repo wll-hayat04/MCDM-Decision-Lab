@@ -1,49 +1,27 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 
-from methods.ranking import normalize_wsm, wsm_scores
+from ui import (
+    load_css, show_header, show_sidebar, show_decision_matrix,
+    show_criteria_controls, show_manual_weights, show_ahp_input,
+    show_bwm_input, show_weights_result, show_ranking_details, show_results
+)
+from utils import validate_decision_matrix, ranking_dataframe
+from methods.weighting import (
+    manual_weights, ahp_weights, bwm_weights, entropy_weights, critic_weights
+)
+from methods.ranking import wsm, wpm, waspas, topsis, vikor
 
-st.set_page_config(page_title="MCDM Model Selection", page_icon="📊", layout="wide")
-
-st.title("MCDM Model Selection")
-st.subheader("Sélection du meilleur modèle de Machine Learning pour la détection de fraude bancaire")
-
-st.markdown(
-    """
-Cette application compare plusieurs modèles de Machine Learning selon plusieurs critères.
-Dans cette première version, les poids sont saisis manuellement et le classement est obtenu avec **WSM (Weighted Sum Method)**.
-"""
+st.set_page_config(
+    page_title="MCDM Decision Lab",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# -------------------------
-# 1. Données d'exemple
-# -------------------------
-@st.cache_data
-def load_default_data():
-    return pd.read_csv("data/example_data.csv")
+load_css()
+show_header()
 
-if "decision_matrix" not in st.session_state:
-    st.session_state.decision_matrix = load_default_data()
-
-st.header("1. Matrice de décision")
-st.caption("Vous pouvez modifier directement les valeurs du tableau.")
-
-edited_df = st.data_editor(
-    st.session_state.decision_matrix,
-    use_container_width=True,
-    num_rows="fixed",
-    hide_index=True,
-)
-
-# Identifier alternatives et critères
-alternative_col = "Model"
-criteria = [c for c in edited_df.columns if c != alternative_col]
-
-st.header("2. Sens des critères")
-st.write("Choisissez si chaque critère doit être maximisé (+) ou minimisé (-).")
-
-# Valeurs par défaut adaptées au scénario
 DEFAULT_DIRECTIONS = {
     "Precision": "Maximiser (+)",
     "Recall": "Maximiser (+)",
@@ -54,101 +32,77 @@ DEFAULT_DIRECTIONS = {
     "Interpretability": "Maximiser (+)",
 }
 
-directions = {}
-cols = st.columns(3)
-for i, criterion in enumerate(criteria):
-    with cols[i % 3]:
-        default = DEFAULT_DIRECTIONS.get(criterion, "Maximiser (+)")
-        directions[criterion] = st.selectbox(
-            criterion,
-            ["Maximiser (+)", "Minimiser (-)"],
-            index=0 if default.startswith("Max") else 1,
-            key=f"dir_{criterion}",
-        )
+@st.cache_data
+def load_data():
+    return pd.read_csv("data/model_selection.csv")
 
-st.header("3. Poids des critères")
-st.write(
-    "Attribuez une importance à chaque critère. Les valeurs sont automatiquement normalisées afin que leur somme soit égale à 1."
+weighting_method, ranking_method, waspas_lambda, vikor_v = show_sidebar()
+
+df = show_decision_matrix(load_data())
+criteria, matrix = validate_decision_matrix(df, "Model")
+alternatives = df["Model"].tolist()
+
+benefit_flags = show_criteria_controls(criteria, DEFAULT_DIRECTIONS)
+
+# ---------------- PONDERATION ----------------
+if weighting_method == "Manual":
+    raw = show_manual_weights(criteria)
+    weights, w_details = manual_weights(raw)
+
+elif weighting_method == "AHP":
+    pairwise = show_ahp_input(criteria)
+    weights, w_details = ahp_weights(pairwise)
+
+elif weighting_method == "BWM":
+    best_idx, worst_idx, BO, OW = show_bwm_input(criteria)
+    weights, w_details = bwm_weights(best_idx, worst_idx, BO, OW)
+
+elif weighting_method == "Entropy":
+    # Méthode objective: calcul direct à partir de la matrice.
+    weights, w_details = entropy_weights(matrix)
+
+elif weighting_method == "CRITIC":
+    weights, w_details = critic_weights(matrix, benefit_flags)
+
+show_weights_result(criteria, weights, w_details)
+
+# ---------------- CLASSEMENT ----------------
+if ranking_method == "WSM":
+    scores, r_details = wsm(matrix, weights, benefit_flags)
+    score_col = "Score WSM"
+
+elif ranking_method == "WPM":
+    scores, r_details = wpm(matrix, weights, benefit_flags)
+    score_col = "Score WPM"
+
+elif ranking_method == "WASPAS":
+    scores, r_details = waspas(matrix, weights, benefit_flags, lam=waspas_lambda)
+    score_col = "Score WASPAS"
+
+elif ranking_method == "TOPSIS":
+    scores, r_details = topsis(matrix, weights, benefit_flags)
+    score_col = "RC TOPSIS"
+
+elif ranking_method == "VIKOR":
+    scores, r_details = vikor(matrix, weights, benefit_flags, v=vikor_v)
+    score_col = "Q VIKOR"
+
+show_ranking_details(criteria, alternatives, r_details)
+
+run = st.button("Calculer le classement final", type="primary", use_container_width=True)
+
+if run:
+    higher_is_better = r_details.get("higher_is_better", True)
+    result_df = ranking_dataframe(
+        alternatives,
+        scores,
+        higher_is_better=higher_is_better,
+        score_name=score_col
+    )
+    show_results(result_df, score_col)
+
+st.markdown("---")
+st.caption(
+    "MCDM Decision Lab — pondération: Manual, AHP, BWM, Entropy, CRITIC • "
+    "classement: WSM, WPM, WASPAS, TOPSIS, VIKOR."
 )
-
-raw_weights = {}
-weight_cols = st.columns(3)
-for i, criterion in enumerate(criteria):
-    with weight_cols[i % 3]:
-        raw_weights[criterion] = st.number_input(
-            f"Poids - {criterion}",
-            min_value=0.0,
-            value=1.0,
-            step=0.1,
-            key=f"weight_{criterion}",
-        )
-
-weight_array = np.array([raw_weights[c] for c in criteria], dtype=float)
-if weight_array.sum() > 0:
-    normalized_weights = weight_array / weight_array.sum()
-else:
-    normalized_weights = np.ones(len(criteria)) / len(criteria)
-
-weights_df = pd.DataFrame(
-    {
-        "Critère": criteria,
-        "Poids normalisé": normalized_weights,
-    }
-)
-st.dataframe(weights_df.style.format({"Poids normalisé": "{:.3f}"}), use_container_width=True, hide_index=True)
-
-st.header("4. Méthode de classement")
-method = st.selectbox("Méthode", ["WSM - Weighted Sum Method"])
-
-st.divider()
-
-if st.button("Calculer le classement", type="primary", use_container_width=True):
-    try:
-        numeric_matrix = edited_df[criteria].astype(float).to_numpy()
-        benefit_flags = [directions[c].startswith("Max") for c in criteria]
-
-        normalized_matrix = normalize_wsm(numeric_matrix, benefit_flags)
-        scores = wsm_scores(normalized_matrix, normalized_weights)
-
-        result_df = pd.DataFrame(
-            {
-                "Alternative": edited_df[alternative_col],
-                "Score WSM": scores,
-            }
-        ).sort_values("Score WSM", ascending=False).reset_index(drop=True)
-
-        result_df.insert(0, "Rang", np.arange(1, len(result_df) + 1))
-
-        st.success(f"Meilleure alternative : {result_df.iloc[0]['Alternative']}")
-
-        c1, c2 = st.columns([1.2, 1])
-        with c1:
-            st.subheader("Classement final")
-            st.dataframe(
-                result_df.style.format({"Score WSM": "{:.4f}"}),
-                use_container_width=True,
-                hide_index=True,
-            )
-
-        with c2:
-            st.subheader("Scores")
-            chart_df = result_df.set_index("Alternative")[["Score WSM"]]
-            st.bar_chart(chart_df)
-
-        with st.expander("Voir la matrice normalisée"):
-            normalized_df = pd.DataFrame(normalized_matrix, columns=criteria)
-            normalized_df.insert(0, "Model", edited_df[alternative_col].values)
-            st.dataframe(normalized_df.style.format(precision=4), use_container_width=True, hide_index=True)
-
-        with st.expander("Comment le score WSM est-il calculé ?"):
-            st.latex(r"Q_i = \sum_{j=1}^{n} w_j r_{ij}")
-            st.write(
-                "Chaque valeur normalisée rᵢⱼ est multipliée par le poids wⱼ du critère. "
-                "L'alternative ayant le score Qᵢ le plus élevé est classée première."
-            )
-
-    except Exception as exc:
-        st.error(f"Erreur lors du calcul : {exc}")
-
-st.divider()
-st.caption("V1 — Poids manuels + WSM. Prochaine étape : AHP, BWM, Entropie, CRITIC, TOPSIS, WASPAS et VIKOR.")

@@ -1,0 +1,6 @@
+Model,Precision,Recall,F1-score,AUPRC,Training time (s),Prediction time (ms),Interpretability
+Logistic Regression,0.87,0.73,0.79,0.81,1.2,2.0,9
+Random Forest,0.92,0.82,0.87,0.90,12.5,7.0,6
+XGBoost,0.94,0.87,0.90,0.93,18.4,5.0,5
+SVM,0.89,0.79,0.84,0.86,27.8,8.0,4
+KNN,0.81,0.75,0.78,0.79,3.5,12.0,5
