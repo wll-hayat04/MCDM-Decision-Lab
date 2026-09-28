@@ -8,17 +8,38 @@ from .normalization import (
 EPS = 1e-12
 
 def wsm(matrix, weights, benefit_flags):
-    r = normalize_wsm(matrix, benefit_flags)
+
+    # 1. Solutions idéales
+    best, worst = ideal_solutions(
+        matrix,
+        benefit_flags
+    )
+
+    # 2. Normalisation
+    r = normalize_wsm(
+        matrix,
+        benefit_flags
+    )
+
+    # 3. Matrice pondérée
     weighted = r * weights
+
+    # 4. Scores WSM
     scores = weighted.sum(axis=1)
+
     details = {
         "method": "WSM",
+
+        "best": best,
+        "worst": worst,
+
         "normalized_matrix": r,
         "weighted_matrix": weighted,
+
         "higher_is_better": True
     }
-    return scores, details
 
+    return scores, details
 def wpm(matrix, weights, benefit_flags):
     r = normalize_wsm(matrix, benefit_flags)
     safe = np.clip(r, EPS, None)
