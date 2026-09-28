@@ -1779,47 +1779,103 @@ def show_ranking_details(
 # RESULTATS FINAUX
 # ============================================================
 
-def show_results(result_df,score_col):
+def show_results(result_df, score_col):
 
     section(
         "6",
         "Classement final",
         """
-        Les alternatives sont classées
-        selon la méthode MCDM sélectionnée.
+        Les alternatives sont classées selon
+        la méthode MCDM sélectionnée.
         """
     )
 
     best = result_df.iloc[0]
 
+    # ========================================================
+    # MEILLEURE ALTERNATIVE
+    # ========================================================
+
     html(f"""
     <div class="winner">
-        Meilleure alternative :
-        <b>{best["Alternative"]}</b>
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            flex-wrap:wrap;
+            gap:10px;
+        ">
 
-        &nbsp;&nbsp; | &nbsp;&nbsp;
+            <div>
+                <span style="
+                    font-size:0.85rem;
+                    font-weight:600;
+                    opacity:0.75;
+                ">
+                    MEILLEURE ALTERNATIVE
+                </span>
 
-        {score_col} =
-        <b>{best[score_col]:.4f}</b>
+                <div style="
+                    font-size:1.25rem;
+                    font-weight:800;
+                    margin-top:4px;
+                ">
+                    {best["Alternative"]}
+                </div>
+            </div>
+
+            <div style="
+                text-align:right;
+            ">
+                <span style="
+                    font-size:0.85rem;
+                    font-weight:600;
+                    opacity:0.75;
+                ">
+                    {score_col}
+                </span>
+
+                <div style="
+                    font-size:1.35rem;
+                    font-weight:800;
+                    margin-top:4px;
+                ">
+                    {best[score_col]:.4f}
+                </div>
+            </div>
+
+        </div>
     </div>
     """)
 
+    # ========================================================
+    # TABLEAU + GRAPHIQUE
+    # ========================================================
+
     c1, c2 = st.columns(
-        [1.15, 1],
+        [1.05, 1],
         gap="large"
     )
 
+    # --------------------------------------------------------
+    # TABLEAU
+    # --------------------------------------------------------
+
     with c1:
 
-        st.markdown(
-            "### Classement"
-        )
+        st.markdown("### Classement")
 
         st.dataframe(
             result_df,
             width="stretch",
             hide_index=True,
             column_config={
+                "Rang":
+                    st.column_config.NumberColumn(
+                        "Rang",
+                        format="%d"
+                    ),
+
                 score_col:
                     st.column_config.NumberColumn(
                         score_col,
@@ -1828,21 +1884,25 @@ def show_results(result_df,score_col):
             }
         )
 
+    # --------------------------------------------------------
+    # GRAPHIQUE
+    # --------------------------------------------------------
+
     with c2:
 
-        st.markdown(
-            "### Scores"
-        )
+        st.markdown("### Scores")
 
+        # IMPORTANT :
+        # on garde exactement l'ordre du classement
         chart_df = (
-            result_df
-            .set_index(
-                "Alternative"
-            )[
-                [score_col]
+            result_df[
+                ["Alternative", score_col]
             ]
+            .copy()
+            .set_index("Alternative")
         )
 
         st.bar_chart(
-            chart_df
+            chart_df,
+            width="stretch"
         )
