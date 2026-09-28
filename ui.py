@@ -20,10 +20,13 @@ SAATY_VALUES = {
 }
 
 def html(content):
-    st.markdown(
-        textwrap.dedent(content).strip(),
-        unsafe_allow_html=True
-    )
+    # Markdown interprète une ligne indentee de >=4 espaces (precedee d'une
+    # ligne vide) comme un bloc de code : on retire l'indentation de CHAQUE
+    # ligne (textwrap.dedent seul ne retire que l'indentation commune, ce qui
+    # laisse les balises imbriquees indentees et casse le rendu HTML).
+    lines = content.strip("\n").split("\n")
+    cleaned = "\n".join(line.strip() for line in lines)
+    st.markdown(cleaned, unsafe_allow_html=True)
 # ============================================================
 # FONCTIONS UTILITAIRES UI
 # ============================================================
