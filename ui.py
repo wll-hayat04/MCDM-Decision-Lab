@@ -191,29 +191,23 @@ def load_css():
         ============================ */
 
         .winner {
-            background:
-                linear-gradient(
-                    135deg,
-                    #dcfce7,
-                    #ecfccb
-                );
+        background:
+            linear-gradient(
+                135deg,
+                #dcfce7,
+                #ecfccb
+            );
 
-            border: 1px solid #bbf7d0;
-
-            color: #14532d;
-
-            padding: 18px 22px;
-
-            border-radius: 18px;
-
-            font-weight: 800;
-
-            box-shadow:
-                0 8px 26px
-                rgba(34, 197, 94, 0.10);
-
-            margin: 10px 0 18px;
-        }
+        border: 1px solid #bbf7d0;
+        color: #14532d;
+        padding: 18px 22px;
+        border-radius: 18px;
+        font-weight: 800;
+        box-shadow:
+            0 8px 26px
+            rgba(34, 197, 94, 0.10);
+        margin: 10px 0 18px;
+    }
 
 
         /* ============================
